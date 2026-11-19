@@ -1,0 +1,292 @@
+<!DOCTYPE html>
+<html>
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Ultimate Fighter</title>
+
+<style>
+* {
+  box-sizing: border-box;
+}
+
+body {
+  margin: 0;
+  background: linear-gradient(135deg, #10002b, #240046, #3c096c);
+  color: white;
+  font-family: Arial, sans-serif;
+  text-align: center;
+}
+
+h1 {
+  color: #ffcc00;
+  text-shadow: 0 0 15px orange;
+}
+
+.game {
+  max-width: 700px;
+  margin: 20px auto;
+  padding: 20px;
+  background: #16002e;
+  border: 3px solid #9d4edd;
+  border-radius: 20px;
+}
+
+.fighters {
+  display: flex;
+  justify-content: space-around;
+  align-items: center;
+  gap: 15px;
+}
+
+.fighter {
+  width: 45%;
+}
+
+.character {
+  font-size: 90px;
+  transition: transform 0.2s;
+}
+
+.health {
+  height: 20px;
+  background: #555;
+  border-radius: 20px;
+  overflow: hidden;
+  margin: 10px 0;
+}
+
+.bar {
+  height: 100%;
+  background: #00ff66;
+  width: 100%;
+  transition: width 0.3s;
+}
+
+.enemy .bar {
+  background: #ff3333;
+}
+
+.vs {
+  font-size: 30px;
+  color: yellow;
+}
+
+button {
+  padding: 13px 20px;
+  margin: 8px;
+  border: none;
+  border-radius: 10px;
+  font-size: 16px;
+  font-weight: bold;
+  cursor: pointer;
+  background: #ff8500;
+  color: white;
+}
+
+button:hover {
+  background: #ffcc00;
+  color: black;
+}
+
+#message {
+  min-height: 50px;
+  font-size: 19px;
+  color: #00ffcc;
+  margin: 20px;
+}
+
+@keyframes attack {
+  50% { transform: translateX(35px) scale(1.2); }
+}
+
+@keyframes hit {
+  50% { transform: translateX(-15px) rotate(15deg); }
+}
+
+.attack {
+  animation: attack 0.25s;
+}
+
+.hit {
+  animation: hit 0.25s;
+}
+</style>
+</head>
+
+<body>
+
+<h1>⚔️ ULTIMATE FIGHTER ⚔️</h1>
+
+<div class="game">
+
+  <div class="fighters">
+
+    <div class="fighter">
+      <h2>🥷 PLAYER</h2>
+      <div class="character" id="player">🥷</div>
+      <div class="health">
+        <div class="bar" id="playerBar"></div>
+      </div>
+      <p id="playerHP">100 HP</p>
+    </div>
+
+    <div class="vs">VS</div>
+
+    <div class="fighter enemy">
+      <h2>👹 ENEMY</h2>
+      <div class="character" id="enemy">👹</div>
+      <div class="health">
+        <div class="bar" id="enemyBar"></div>
+      </div>
+      <p id="enemyHP">100 HP</p>
+    </div>
+
+  </div>
+
+  <h2>🔥 BATTLE ARENA 🔥</h2>
+
+  <div id="message">Choose your attack!</div>
+
+  <div>
+    <button onclick="attack(10,'Punch')">👊 Punch</button>
+    <button onclick="attack(20,'Kick')">🦶 Kick</button>
+    <button onclick="special()">🔥 Special</button>
+    <button onclick="defend()">🛡️ Defend</button>
+  </div>
+
+  <button onclick="restart()">🔄 Restart Game</button>
+
+</div>
+
+<script>
+let playerHP = 100;
+let enemyHP = 100;
+let energy = 50;
+let gameOver = false;
+
+function update() {
+  document.getElementById("playerBar").style.width =
+    playerHP + "%";
+
+  document.getElementById("enemyBar").style.width =
+    enemyHP + "%";
+
+  document.getElementById("playerHP").innerText =
+    playerHP + " HP";
+
+  document.getElementById("enemyHP").innerText =
+    enemyHP + " HP";
+}
+
+function animate(id, animation) {
+  const el = document.getElementById(id);
+  el.classList.remove(animation);
+  void el.offsetWidth;
+  el.classList.add(animation);
+}
+
+function checkWinner() {
+  if (enemyHP <= 0) {
+    enemyHP = 0;
+    gameOver = true;
+    document.getElementById("message").innerText =
+      "🏆 YOU WIN! Champion Fighter!";
+  } else if (playerHP <= 0) {
+    playerHP = 0;
+    gameOver = true;
+    document.getElementById("message").innerText =
+      "💀 GAME OVER! Enemy Wins!";
+  }
+}
+
+function enemyAttack() {
+  if (gameOver) return;
+
+  let damage = Math.floor(Math.random() * 10) + 5;
+
+  playerHP = Math.max(0, playerHP - damage);
+
+  animate("player", "hit");
+
+  document.getElementById("message").innerText =
+    "👹 Enemy attacked! You lost " + damage + " HP!";
+
+  checkWinner();
+  update();
+}
+
+function attack(damage, name) {
+  if (gameOver) return;
+
+  enemyHP = Math.max(0, enemyHP - damage);
+
+  animate("player", "attack");
+
+  document.getElementById("message").innerText =
+    "💥 " + name + "! You dealt " + damage + " damage!";
+
+  energy = Math.min(100, energy + 10);
+
+  checkWinner();
+  update();
+
+  if (!gameOver) {
+    setTimeout(enemyAttack, 500);
+  }
+}
+
+function special() {
+  if (gameOver) return;
+
+  if (energy < 40) {
+    document.getElementById("message").innerText =
+      "⚡ Not enough energy!";
+    return;
+  }
+
+  energy -= 40;
+  enemyHP = Math.max(0, enemyHP - 40);
+
+  animate("player", "attack");
+
+  document.getElementById("message").innerText =
+    "🔥 SUPER ATTACK! 40 DAMAGE!";
+
+  checkWinner();
+  update();
+
+  if (!gameOver) {
+    setTimeout(enemyAttack, 500);
+  }
+}
+
+function defend() {
+  if (gameOver) return;
+
+  playerHP = Math.min(100, playerHP + 15);
+  document.getElementById("message").innerText =
+    "🛡️ You defended and recovered 15 HP!";
+
+  update();
+
+  setTimeout(enemyAttack, 500);
+}
+
+function restart() {
+  playerHP = 100;
+  enemyHP = 100;
+  energy = 50;
+  gameOver = false;
+
+  document.getElementById("message").innerText =
+    "⚔️ New battle started!";
+
+  update();
+}
+
+update();
+</script>
+
+</body>
+</html>
